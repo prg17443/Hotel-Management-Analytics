@@ -187,4 +187,67 @@ if st.button("Search Customer"):
         except mysql.connector.Error as e :
                 st.error(f"Database error : {e}")
 
+st.subheader("Update Customer")
+
+customer_id = st.number_input("Enter Customer ID", min_value=1, step=1)
+
+if st.button("Load Customer"):
+
+    try :
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = """ SELECT first_name, last_name, gender,age,city,state,country,nationality FROM customers WHERE customer_id = %s """
+
+        cursor.execute(sql,(int(customer_id),))
+        customer = cursor.fetchone()
+        st.session_state["customer"] = customer
+        cursor.close()
+        connection.close()
+    except mysql.connector.Error as e:
+        st.error("Database error: {e}")
+
+customer = st.session_state.get("customer")
+
+if customer:
+    st.success("Customer found!")
+    st.subheader("Edit Customer Details")
+
+    first_name = st.text_input("First Name", value=customer[0])
+    last_name = st.text_input("Last Name", value=customer[1])
+    gender_options = ["Male","Female","Other"]
+    gender = st.selectbox("Gender",gender_options,index=gender_options.index(customer[2]))
+    age = st.number_input("Age",min_value=1,max_value=120,value=customer[3],step=1)
+    city = st.text_input("City",value=customer[4])
+    state = st.text_input("State",value=customer[5])
+    country = st.text_input("Country",value=customer[6])
+    nationality = st.text_input("Nationality", value=customer[7] if customer[7] is not None else "")
+    update_button = st.button("Update Customer")
+    if update_button:
+        try:
+            connection = create_connection()
+            cursor = connection.cursor()
+            sql = """ UPDATE customers 
+            SET 
+                first_name = %s,
+                last_name = %s,
+                gender = %s,
+                age = %s,
+                city = %s,
+                state = %s,
+                country = %s,
+                nationality = %s
+                WHERE customer_id = %s """
+            values = (first_name.strip(),last_name.strip(),gender,age,city.strip(),state.strip(),country.strip(),
+                        nationality.strip(),customer_id)
+            cursor.execute(sql,values)
+            connection.commit()
+            cursor.close()
+            connection.close()
+            st.success("Customer Details is Updated Successfully!")
+        except mysql.connector.Error as e:
+            st.error(f"Database error: {e}")
+    else:
+        st.warning("Customer not found")
+
+
 
