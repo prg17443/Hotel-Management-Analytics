@@ -139,19 +139,39 @@ if st.button("Update Room"):
         st.error(f"Database error: {e}")
 
 if submit_room:
-    check_sql = """ SELECT room_id FROM rooms wHERE room_number = %s """
-    cursor.execute(check_sql,(room_number.strip(), ))
-    existing_room = cursor.fetchone()
+    if room_number.strip() == "":
+        st.error("Please Enter room number.")
+    elif room_type == "SELECT":
+        st.error("Please enter a valid room price.")
+    elif price_per_night <= 0:
+        st.error("Please Enter a valid room price.")
+    else:
+        connection = None
+        cursor = None
+        try :
+            connection = create_connection()
+            cursor = connection.cursor()
+            check_sql = """ SELECT room_id FROM rooms wHERE room_number = %s """        
+            cursor.execute(check_sql,(room_number.strip(), ))
 
-if existing_room:
-    st.warning("Room number already exists.")
-else:
-    sql = """ INSERT INTO rooms (room_number,room_type,price_per_night,capacity) VALUES (%s,%s,%s,%s) """
-    values = (room_number.strip(),room_type,price_per_night,capacity)
+            existing_room = cursor.fetchone()
 
-    cursor.execute(sql,values)
-    connection.commit()
-    st.success("Room Added Successfully!!!")
+            if existing_room:
+                st.warning("Room number already exists.")
+            else:
+                sql = """ INSERT INTO rooms (room_number,room_type,price_per_night,capacity) VALUES (%s,%s,%s,%s) """
+                values = (room_number.strip(),room_type,price_per_night,capacity)
+
+                cursor.execute(sql,values)
+                connection.commit()
+                st.success("Room Added Successfully!!!")
+        except mysql.connector.Error as e :
+            st.error(f"Database error:{e}")
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None and connection.is_connected():
+                connection.close()
 
 
         
