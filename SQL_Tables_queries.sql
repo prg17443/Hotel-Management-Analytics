@@ -40,6 +40,10 @@ Create table customers ( customer_id INT AUTO_INCREMENT PRIMARY KEY,
  food_charges DECIMAL(10,2) DEFAULT 0,
  services_charges DECIMAL(10,2) DEFAULT 0,
  discount DECIMAL(10,2) DEFAULT 0,
+ tax DECIMAL(10,2) DEFAULT 0,
+ total_amount DECIMAL(10,2) DEFAULT 0,
+ payment_status VARCHAR(30) DEFAULT "Pending",
+ FOREIGN KEY (booking_id) REFERENCES bookings(booking_id));
  
  
  
